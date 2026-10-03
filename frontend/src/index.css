@@ -1,0 +1,144 @@
+@import '@fontsource/fira-sans/400.css';
+@import '@fontsource/fira-sans/500.css';
+@import '@fontsource/fira-sans/600.css';
+@import '@fontsource/fira-code/400.css';
+@import '@fontsource/fira-code/600.css';
+@import 'tailwindcss';
+@import 'maplibre-gl/dist/maplibre-gl.css';
+
+/*
+  Design tokens. Fonts are bundled, not fetched, because the ground station runs
+  in the field without internet. Dark is the default; the light theme is for
+  bright sunlight. Status colours always come with an icon or a word.
+*/
+:root {
+  --bg: #0a0f14;
+  --surface: #111920;
+  --surface-2: #19242e;
+  --surface-3: #22303c;
+  --line: #2a3946;
+  --ink: #e9eff3;
+  --muted: #93a4b1;
+  --brand: #3ddc84;
+  --on-brand: #04200f;
+  --info: #4cc2ff;
+  --warn: #f7b23b;
+  --danger: #ff5a4f;
+  --on-danger: #2a0503;
+  --plan: #4cc2ff;
+  --track: #ffd84a;
+  --fence: #ff5a4f;
+  --overlay: rgb(10 15 20 / 0.86);
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --bg: #eef2f1;
+  --surface: #ffffff;
+  --surface-2: #f1f5f4;
+  --surface-3: #e2e9e7;
+  --line: #c5d0cc;
+  --ink: #0f1c24;
+  --muted: #52626d;
+  --brand: #14703a;
+  --on-brand: #ffffff;
+  --info: #0b6aa2;
+  --warn: #a85a06;
+  --danger: #c3221b;
+  --on-danger: #ffffff;
+  --plan: #0b6aa2;
+  --track: #b45309;
+  --fence: #c3221b;
+  --overlay: rgb(255 255 255 / 0.92);
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-on-brand: var(--on-brand);
+  --color-info: var(--info);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-on-danger: var(--on-danger);
+  --color-overlay: var(--overlay);
+  --font-sans: 'Fira Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'Fira Code', Consolas, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Numbers that change several times a second must not make the layout jitter. */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--info);
+  outline-offset: 2px;
+}
+
+button,
+[role='button'],
+select,
+summary {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Thin scrollbars inside panels */
+.scroll {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-3) transparent;
+}
+
+.maplibregl-ctrl-attrib {
+  font-size: 10px;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 70%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+
+.alarm {
+  animation: pulse-ring 1.2s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

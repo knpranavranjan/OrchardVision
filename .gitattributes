@@ -1,0 +1,4 @@
+# Weights are verified by checksum, so git must never rewrite their line endings.
+models/**/weights.* binary
+*.bin binary
+*.pdf binary

@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: orchardvision-db
+    environment:
+      POSTGRES_USER: orchard
+      POSTGRES_PASSWORD: orchard
+      POSTGRES_DB: orchardvision
+    ports:
+      # 5433 on the host so a locally installed PostgreSQL on 5432 is left alone
+      - "5433:5432"
+    volumes:
+      - orchardvision-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orchard -d orchardvision"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # The real ArduPilot flight code running in software. Optional; start it with
+  #   docker compose --profile sitl up -d sitl
+  # then connect the ground station to tcp:127.0.0.1:5760
+  sitl:
+    profiles: ["sitl"]
+    build: ./sitl
+    container_name: orchardvision-sitl
+    environment:
+      SITL_HOME: "12.9716,77.5946,900,0"
+    ports:
+      - "5760:5760"
+
+volumes:
+  orchardvision-db:

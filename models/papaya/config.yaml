@@ -1,0 +1,40 @@
+# Papaya crop profile. See docs/PLAN.md section 5.6.
+crop: papaya
+name: Papaya
+plant_architecture: trunk_column
+
+classes:
+  tree: [papaya_tree]
+  fruit: [papaya_fruit]
+
+tree_spacing_m: 2.0
+crown_diameter_m: 2.0
+
+# Coarsest image detail each model accepts. Mission validation enforces these.
+min_gsd_cm:
+  tree: 2.0
+  fruit: 0.3
+
+# Active model version per kind. The stub is replaced by the real model later.
+active:
+  tree: stub-0
+  fruit: stub-0
+
+# Placeholder geometry. The field viewpoint study sets the real values.
+viewpoint_template:
+  pass_type: row_side_pass
+  heights_m: [1.5]
+  standoff_m: 2.0
+  tilt_deg: 0
+  sides: 2
+  speed_mps: 1.0
+  provisional: true
+
+assignment_rule: nearest_trunk
+
+estimator:
+  layers: [raw, missed_by_chance, never_visible]
+
+calibration:
+  trees: 18
+  stratify_by: crown_size

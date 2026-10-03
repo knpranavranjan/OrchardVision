@@ -1,0 +1,8 @@
+version: stub-0
+framework: stub
+weights: weights.bin
+sha256: 2fe1240522957ac9e4d3b99a657184cb442ab3eeffdba705dd1481476c35f6c2
+input_size: [640, 640]
+classes: [papaya_fruit]
+metrics: {}
+notes: Placeholder until the real papaya fruit model is registered.

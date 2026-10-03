@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Local configuration and data
+.env
+data/
+*.log
+*.tlog
+
+# Model weights stay out of git; stub weights are tiny and tracked
+models/**/*.pt
+models/**/*.pth
+models/**/*.onnx
+models/**/*.engine
+
+# Editors and OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

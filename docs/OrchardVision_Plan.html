@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OrchardVision — Complete Development Plan</title>
+<style>
+  @page { size: A4; margin: 17mm 16mm 18mm 16mm;
+          @bottom-center { content: "OrchardVision plan v1.3  ·  page " counter(page); font: 8pt "Segoe UI", Arial, sans-serif; color: #6b7772; } }
+  @page :first { @bottom-center { content: ""; } }
+  :root { --ink:#1c2a24; --green:#2f7d4f; --pale:#e7f3ea; --amber:#d98a1f; --blue:#2c6fb0; --grey:#6b7772; --light:#f4f6f5; --red:#c0492f; --line:#cfd8d3; }
+  * { box-sizing: border-box; }
+  body { font: 10.3pt/1.5 "Segoe UI", Arial, sans-serif; color: var(--ink); margin: 0; }
+  h1 { font-size: 30pt; margin: 0 0 6pt; letter-spacing: -0.5pt; }
+  h2 { font-size: 17pt; color: var(--green); margin: 0 0 8pt; padding-bottom: 4pt; border-bottom: 2px solid var(--green); break-before: page; }
+  h2.nobreak { break-before: auto; margin-top: 20pt; }
+  h3 { font-size: 12pt; margin: 14pt 0 4pt; break-after: avoid; }
+  h4 { font-size: 10.3pt; margin: 10pt 0 2pt; color: var(--green); break-after: avoid; }
+  p { margin: 0 0 7pt; }
+  ul, ol { margin: 0 0 8pt; padding-left: 16pt; }
+  li { margin-bottom: 2.5pt; }
+  table { border-collapse: collapse; width: 100%; margin: 6pt 0 10pt; font-size: 9.2pt; }
+  th { background: var(--green); color: #fff; text-align: left; padding: 4pt 6pt; font-weight: 600; }
+  td { border-bottom: 1px solid var(--line); padding: 4pt 6pt; vertical-align: top; }
+  tr { break-inside: avoid; }
+  tr:nth-child(even) td { background: var(--light); }
+  figure { margin: 8pt 0 12pt; break-inside: avoid; }
+  figure svg { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+  figcaption { font-size: 8.8pt; color: var(--grey); margin-top: 4pt; }
+  .note { background: var(--pale); border-left: 4px solid var(--green); padding: 7pt 10pt; margin: 8pt 0 10pt; break-inside: avoid; }
+  .warn { background: #fdf3e3; border-left: 4px solid var(--amber); padding: 7pt 10pt; margin: 8pt 0 10pt; break-inside: avoid; }
+  .cover { height: 245mm; display: flex; flex-direction: column; justify-content: center; }
+  .cover .tag { color: var(--green); font-weight: 600; letter-spacing: 1.5pt; font-size: 10pt; margin-bottom: 10pt; }
+  .cover .sub { font-size: 13pt; color: var(--grey); max-width: 135mm; }
+  .cover .meta { margin-top: 28pt; font-size: 9.5pt; color: var(--grey); }
+  .toc { columns: 2; font-size: 9.8pt; margin-top: 22pt; }
+  .toc div { margin-bottom: 3pt; }
+  code { font: 9pt Consolas, monospace; background: var(--light); padding: 0 2pt; }
+  .yes { color: var(--green); font-weight: 600; } .no { color: var(--grey); } .part { color: var(--amber); font-weight: 600; }
+  svg text { font-family: "Segoe UI", Arial, sans-serif; fill: #1c2a24; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="tag">ORCHARDVISION · PLAN v1.3 · 2 OCTOBER 2026</div>
+  <h1>Complete Development Plan</h1>
+  <p class="sub">A ground-control and orchard-intelligence platform that plans a drone survey, flies it on a virtual or real drone, and turns the footage into a tree map and a fruit count with a stated uncertainty.</p>
+  <div class="toc">
+    <div>1. What we are building</div>
+    <div>2. The drone software</div>
+    <div>3. Comparison with other ground stations</div>
+    <div>4. Orchards, crops and models</div>
+    <div>5. How the camera captures</div>
+    <div>6. Hidden fruit: the three ideas, checked</div>
+    <div>7. Simulation and the virtual flight</div>
+    <div>8. Step-by-step development</div>
+    <div>9. Things noticed while planning</div>
+    <div>10. Decisions still open</div>
+  </div>
+  <div class="meta">Companion files: PLAN.md (the locked contract) and PRIOR_WORK.md (the literature scan with links).</div>
+</section>
+
+<!-- ============================================================ 1 -->
+<h2>1. What we are building</h2>
+<p>OrchardVision is one application with three jobs. It is a <b>ground station</b> that plans and supervises a drone flight. It is an <b>analysis system</b> that finds every tree and counts the fruit on it. It is a <b>simulator</b> that flies the same mission on a virtual drone over a virtual orchard, so the whole chain can be tested before any hardware exists.</p>
+
+<figure>
+<svg viewBox="0 0 720 345" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#6b7772"/></marker></defs>
+  <rect x="40" y="14" width="640" height="46" rx="6" fill="#e7f3ea" stroke="#2f7d4f"/>
+  <text x="360" y="34" text-anchor="middle" font-size="13" font-weight="600">Browser application</text>
+  <text x="360" y="51" text-anchor="middle" font-size="11">Plan · Fly · Orchards · Analysis · Simulation · Data · Models · Reports · Settings</text>
+  <line x1="300" y1="60" x2="300" y2="100" stroke="#6b7772" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="292" y="84" text-anchor="end" font-size="10.5">requests</text>
+  <line x1="420" y1="100" x2="420" y2="60" stroke="#6b7772" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="428" y="84" font-size="10.5">live telemetry, events, job progress</text>
+  <rect x="40" y="100" width="640" height="88" rx="6" fill="#f4f6f5" stroke="#6b7772"/>
+  <text x="54" y="119" font-size="12" font-weight="600">Backend (runs on the field laptop, works offline)</text>
+  <g font-size="11" text-anchor="middle">
+    <rect x="54" y="130" width="112" height="44" rx="4" fill="#fff" stroke="#cfd8d3"/><text x="110" y="149">Orchard</text><text x="110" y="164">service</text>
+    <rect x="178" y="130" width="112" height="44" rx="4" fill="#fff" stroke="#cfd8d3"/><text x="234" y="149">Mission engine</text><text x="234" y="164" font-size="9.5">plan, compile, validate</text>
+    <rect x="302" y="130" width="112" height="44" rx="4" fill="#fff" stroke="#cfd8d3"/><text x="358" y="149">Flight service</text><text x="358" y="164" font-size="9.5">owns the drone link</text>
+    <rect x="426" y="130" width="112" height="44" rx="4" fill="#fff" stroke="#cfd8d3"/><text x="482" y="149">Ingestion</text><text x="482" y="164" font-size="9.5">photos, video, poses</text>
+    <rect x="550" y="130" width="116" height="44" rx="4" fill="#fff" stroke="#cfd8d3"/><text x="608" y="149">Analysis jobs</text><text x="608" y="164" font-size="9.5">queue</text>
+  </g>
+  <line x1="358" y1="188" x2="210" y2="222" stroke="#6b7772" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="60" y="224" width="300" height="34" rx="6" fill="#e8f0f8" stroke="#2c6fb0"/>
+  <text x="210" y="246" text-anchor="middle" font-size="12" font-weight="600">VehicleLink (one interface for every drone)</text>
+  <g font-size="10.5" text-anchor="middle">
+    <line x1="110" y1="258" x2="110" y2="284" stroke="#6b7772" stroke-width="1.2" marker-end="url(#a1)"/>
+    <line x1="210" y1="258" x2="210" y2="284" stroke="#6b7772" stroke-width="1.2" marker-end="url(#a1)"/>
+    <line x1="310" y1="258" x2="310" y2="284" stroke="#6b7772" stroke-width="1.2" marker-end="url(#a1)"/>
+    <rect x="62" y="286" width="96" height="40" rx="4" fill="#fff" stroke="#2c6fb0"/><text x="110" y="303">Built-in</text><text x="110" y="317">simulator</text>
+    <rect x="162" y="286" width="96" height="40" rx="4" fill="#fff" stroke="#2c6fb0"/><text x="210" y="303">Autopilot in</text><text x="210" y="317">software (SITL)</text>
+    <rect x="262" y="286" width="96" height="40" rx="4" fill="#fff" stroke="#2c6fb0"/><text x="310" y="303">Real drone</text><text x="310" y="317">(Pixhawk)</text>
+  </g>
+  <line x1="608" y1="188" x2="470" y2="222" stroke="#6b7772" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="390" y="224" width="140" height="56" rx="6" fill="#fdf3e3" stroke="#d98a1f"/>
+  <text x="460" y="246" text-anchor="middle" font-size="12" font-weight="600">AI worker</text>
+  <text x="460" y="262" text-anchor="middle" font-size="10">model registry</text>
+  <text x="460" y="274" text-anchor="middle" font-size="10">per-crop pipelines</text>
+  <rect x="548" y="224" width="132" height="56" rx="6" fill="#fff" stroke="#6b7772"/>
+  <text x="614" y="246" text-anchor="middle" font-size="12" font-weight="600">Storage</text>
+  <text x="614" y="262" text-anchor="middle" font-size="10">PostgreSQL + PostGIS</text>
+  <text x="614" y="274" text-anchor="middle" font-size="10">images, video, logs</text>
+  <line x1="530" y1="252" x2="546" y2="252" stroke="#6b7772" stroke-width="1.5" marker-end="url(#a1)"/>
+</svg>
+<figcaption>Figure 1. The parts of OrchardVision. The flight service is the only part that talks to a drone, and it does so through one interface whether the drone is virtual or real.</figcaption>
+</figure>
+
+<h3>The four rules every phase follows</h3>
+<ol>
+  <li><b>One mission, three modes.</b> The same mission is previewed, simulated and flown. Nothing is planned separately for the simulator.</li>
+  <li><b>One vehicle interface.</b> The software talks to a virtual drone and a real drone in exactly the same way.</li>
+  <li><b>One data pipeline.</b> A simulated capture and a real capture enter through the same door in the same format.</li>
+  <li><b>Crop is data.</b> Papaya, mango and apple differ in a crop profile, never in program code.</li>
+</ol>
+
+<h3>What the user does, start to finish</h3>
+<ol>
+  <li>Create an orchard, choose its crop and draw its boundary on the map.</li>
+  <li>Generate a high overhead survey, check it, and fly it (virtual or real).</li>
+  <li>The overhead photos become a tree map: every tree gets a permanent ID and a position.</li>
+  <li>The tree map generates a second, low mission that films the fruit on chosen trees.</li>
+  <li>The video becomes a fruit count per tree, with a range that says how sure the system is.</li>
+  <li>Results appear on the dashboard and in a report.</li>
+</ol>
+
+<!-- ============================================================ 2 -->
+<h2>2. The drone software</h2>
+<p>This is the ground-station part: everything needed to plan a flight, supervise it, and keep a record of it.</p>
+
+<figure>
+<svg viewBox="0 0 720 96" xmlns="http://www.w3.org/2000/svg">
+  <g font-size="10.5" text-anchor="middle">
+    <g fill="#e7f3ea" stroke="#2f7d4f">
+      <path d="M8,22 h64 l14,26 l-14,26 h-64 l14,-26 z"/><path d="M86,22 h64 l14,26 l-14,26 h-64 l14,-26 z"/>
+      <path d="M164,22 h64 l14,26 l-14,26 h-64 l14,-26 z"/><path d="M242,22 h64 l14,26 l-14,26 h-64 l14,-26 z"/>
+    </g>
+    <g fill="#e8f0f8" stroke="#2c6fb0">
+      <path d="M320,22 h64 l14,26 l-14,26 h-64 l14,-26 z"/><path d="M398,22 h64 l14,26 l-14,26 h-64 l14,-26 z"/>
+      <path d="M476,22 h64 l14,26 l-14,26 h-64 l14,-26 z"/>
+    </g>
+    <g fill="#fdf3e3" stroke="#d98a1f">
+      <path d="M554,22 h64 l14,26 l-14,26 h-64 l14,-26 z"/><path d="M632,22 h64 l14,26 l-14,26 h-64 l14,-26 z"/>
+    </g>
+    <text x="48" y="52">Connect</text><text x="126" y="46">Pre-flight</text><text x="126" y="59">checks</text>
+    <text x="204" y="46">Upload,</text><text x="204" y="59">read back</text><text x="282" y="46">Arm,</text><text x="282" y="59">take off</text>
+    <text x="360" y="46">Autopilot</text><text x="360" y="59">flies</text><text x="438" y="46">Camera</text><text x="438" y="59">captures</text>
+    <text x="516" y="46">Land,</text><text x="516" y="59">disarm</text><text x="594" y="46">Offload</text><text x="594" y="59">footage</text>
+    <text x="672" y="52">Analyse</text>
+  </g>
+  <text x="8" y="90" font-size="9.5" fill="#6b7772">green: before flight   ·   blue: in the air (the autopilot steers, the software listens)   ·   amber: after landing</text>
+</svg>
+<figcaption>Figure 2. One flight from connection to analysis. During the flight the autopilot navigates by itself; OrchardVision does not steer from point to point.</figcaption>
+</figure>
+
+<figure>
+<svg viewBox="0 0 720 170" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#6b7772"/></marker></defs>
+  <rect x="14" y="58" width="150" height="54" rx="6" fill="#e7f3ea" stroke="#2f7d4f"/>
+  <text x="89" y="80" text-anchor="middle" font-size="12" font-weight="600">One mission</text>
+  <text x="89" y="97" text-anchor="middle" font-size="10">compiled item list</text>
+  <g stroke="#6b7772" stroke-width="1.5" marker-end="url(#a2)"><line x1="164" y1="72" x2="250" y2="32"/><line x1="164" y1="85" x2="250" y2="85"/><line x1="164" y1="98" x2="250" y2="138"/></g>
+  <g font-size="11.5" text-anchor="middle">
+    <rect x="252" y="12" width="170" height="40" rx="5" fill="#fff" stroke="#2c6fb0"/><text x="337" y="29" font-weight="600">Preview</text><text x="337" y="44" font-size="10">route and numbers on the map</text>
+    <rect x="252" y="65" width="170" height="40" rx="5" fill="#fff" stroke="#2c6fb0"/><text x="337" y="82" font-weight="600">Simulate</text><text x="337" y="97" font-size="10">virtual drone, virtual orchard</text>
+    <rect x="252" y="118" width="170" height="40" rx="5" fill="#fff" stroke="#2c6fb0"/><text x="337" y="135" font-weight="600">Fly</text><text x="337" y="150" font-size="10">Pixhawk, real camera</text>
+  </g>
+  <g stroke="#6b7772" stroke-width="1.5" marker-end="url(#a2)"><line x1="422" y1="85" x2="508" y2="85"/><line x1="422" y1="138" x2="508" y2="100"/></g>
+  <rect x="510" y="52" width="196" height="66" rx="6" fill="#fdf3e3" stroke="#d98a1f"/>
+  <text x="608" y="74" text-anchor="middle" font-size="12" font-weight="600">Same result format</text>
+  <text x="608" y="91" text-anchor="middle" font-size="10">flight record, captures,</text>
+  <text x="608" y="105" text-anchor="middle" font-size="10">analysis pipeline</text>
+</svg>
+<figcaption>Figure 3. The mission is written once. Simulation and real flight execute the identical item list and produce records in the identical format.</figcaption>
+</figure>
+
+<p>The table lists every function we build and how it works.</p>
+<table>
+  <tr><th style="width:24%">Function</th><th>How it works</th></tr>
+  <tr><td><b>Connect</b></td><td>The flight service opens a link: in-process for the built-in simulator, a network port for the software autopilot, a telemetry radio or the on-board computer's network link for the real drone. The drone sends a heartbeat every second; three missed heartbeats mark the link as lost.</td></tr>
+  <tr><td><b>Live telemetry</b></td><td>Every incoming message is turned into one common record: position, height, speed, attitude, heading, battery, GPS quality, flight mode, armed state, current mission item. The record is pushed to the browser about five times a second.</td></tr>
+  <tr><td><b>Pre-flight checklist</b></td><td>Computed, not ticked by hand. GPS fix, satellites, battery, home position and estimator health come from telemetry. Mission validated, model loaded and storage free come from the software. Weather and visual inspection are manual confirmations.</td></tr>
+  <tr><td><b>Mission planner</b></td><td>Three mission types: overhead survey, fruit observation, custom waypoints. The user sets intent (area, height, overlap, speed); the mission engine compiles it into a flat list of items: take off, go to point, set speed, start and stop camera, tilt camera, return, land.</td></tr>
+  <tr><td><b>Survey generator</b></td><td>Takes the orchard boundary and the camera profile. Computes how much ground one photo covers, spaces parallel flight lines so neighbouring photos overlap, places turnarounds outside the boundary, and sets the distance between photos.</td></tr>
+  <tr><td><b>Fruit-mission generator</b></td><td>Takes the stored tree map and the crop's fruit-pass geometry. Picks the trees to observe (all, or a statistical sample), then lays a path along the gaps between rows so each chosen tree is filmed from both sides.</td></tr>
+  <tr><td><b>Mission validation</b></td><td>Checks geometry, that every item is inside the fence, height and speed limits, that image detail meets the crop's minimum, flight time and battery against the reserve, storage needed, a return path from every point, and that the crop's models exist. A mission too long for one battery is split into segments that resume at a known item.</td></tr>
+  <tr><td><b>Upload and read-back</b></td><td>The item list, fence and failsafe settings are sent to the autopilot. The software then reads everything back and compares it with what it sent. Any difference blocks the flight.</td></tr>
+  <tr><td><b>Live flight view</b></td><td>Map with planned route and actual track, height, speed, battery, GPS, attitude, mission progress, capture count. The same view serves virtual and real flights, with a badge showing which.</td></tr>
+  <tr><td><b>Commands</b></td><td>Arm, take off, start, pause, resume, return home, land. Each waits for the autopilot's acknowledgement and shows a failure if none arrives.</td></tr>
+  <tr><td><b>Safety settings</b></td><td>Height and speed limits, fence, battery thresholds, and the action on link loss or GPS loss. These are uploaded to the autopilot, which carries them out on its own. OrchardVision configures, verifies and displays them.</td></tr>
+  <tr><td><b>Flight record and replay</b></td><td>Each flight stores its mission revision, telemetry, events and captures. Any flight can be replayed on the map.</td></tr>
+</table>
+
+<!-- ============================================================ 3 -->
+<h2>3. Comparison with other ground stations</h2>
+<p>QGroundControl and Mission Planner are the two established open ground stations. They are general tools for any drone and any job. OrchardVision is narrower on flying and far deeper on orchards.</p>
+
+<table>
+  <tr><th style="width:36%">Capability</th><th>QGroundControl</th><th>Mission Planner</th><th>OrchardVision</th></tr>
+  <tr><td>Firmware install, sensor calibration, tuning</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No, use one of the others</td></tr>
+  <tr><td>Waypoint missions</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes, basic</td></tr>
+  <tr><td>Area survey with photo overlap</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Corridor and structure scans</td><td class="yes">Yes</td><td class="part">Partial</td><td class="no">No, export instead</td></tr>
+  <tr><td>Geofence</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Rally point editing</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No in V1</td></tr>
+  <tr><td>Live map, telemetry, commands</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes, the essentials</td></tr>
+  <tr><td>Joystick flying, live video</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No in V1</td></tr>
+  <tr><td>Deep flight-log analysis</td><td class="part">Partial</td><td class="yes">Yes</td><td class="no">No, replay only</td></tr>
+  <tr><td>Several drones at once</td><td class="yes">Yes</td><td class="part">Partial</td><td class="no">No</td></tr>
+  <tr><td>Runs in a browser</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td></tr>
+  <tr><td>Orchards, crops and trees as stored records</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td></tr>
+  <tr><td>Mission generated from a tree map</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td></tr>
+  <tr><td>Validation that blocks: battery, image detail, model present</td><td class="part">Shows statistics</td><td class="part">Shows statistics</td><td class="yes">Yes, with flight splitting</td></tr>
+  <tr><td>Upload read-back comparison</td><td class="part">Partial</td><td class="part">Partial</td><td class="yes">Yes, blocks on mismatch</td></tr>
+  <tr><td>Built-in virtual drone</td><td class="no">Connects to one</td><td class="yes">Launches SITL</td><td class="yes">Yes, two kinds</td></tr>
+  <tr><td>Virtual orchard with known fruit counts</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td></tr>
+  <tr><td>Matching photos to capture positions</td><td class="yes">Geotag tool</td><td class="yes">Geotag tool</td><td class="yes">Automatic, with quality checks</td></tr>
+  <tr><td>Video with per-frame camera pose</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td></tr>
+  <tr><td>Tree detection, tree map, permanent tree IDs</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td></tr>
+  <tr><td>Fruit count per tree with uncertainty</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td></tr>
+  <tr><td>Analytics and reports</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td></tr>
+</table>
+
+<h3>What is extra in OrchardVision</h3>
+<ul>
+  <li><b>It knows what an orchard is.</b> Orchards, crops, trees, surveys and estimates are stored records, not just lines on a map.</li>
+  <li><b>The analysis writes the next mission.</b> The tree map from flight one generates the fruit mission for flight two.</li>
+  <li><b>Simulation is a test bench, not a demo.</b> The virtual orchard knows the true fruit count of every tree, so the whole pipeline is scored automatically.</li>
+  <li><b>Validation understands the crop.</b> It refuses a mission whose photos would be too coarse for the crop's model.</li>
+  <li><b>Flight and analysis share one record.</b> Every result traces back to the frame, the camera pose, the flight, the mission revision and the model version.</li>
+</ul>
+<div class="note"><b>What we deliberately do not build.</b> Firmware installation, sensor calibration, tuning, joystick control and deep log analysis already work well in QGroundControl and Mission Planner. One of them stays installed for drone setup. Our missions export to the QGroundControl plan format, so a mission can always be opened there.</div>
+
+<!-- ============================================================ 4 -->
+<h2>4. Orchards, crops and models</h2>
+<p>Papaya is the first crop, not the only one. The platform is written once. Everything that differs between crops lives in a <b>crop profile</b>, a folder of files that the software reads.</p>
+
+<figure>
+<svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg">
+  <rect x="14" y="12" width="692" height="92" rx="6" fill="#f4f6f5" stroke="#6b7772"/>
+  <text x="28" y="33" font-size="12.5" font-weight="600">Shared platform, written once</text>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="28" y="44" width="156" height="22" rx="3" fill="#fff" stroke="#cfd8d3"/><text x="106" y="59">Ground station</text>
+    <rect x="194" y="44" width="156" height="22" rx="3" fill="#fff" stroke="#cfd8d3"/><text x="272" y="59">Mission engine</text>
+    <rect x="360" y="44" width="156" height="22" rx="3" fill="#fff" stroke="#cfd8d3"/><text x="438" y="59">Simulator</text>
+    <rect x="526" y="44" width="166" height="22" rx="3" fill="#fff" stroke="#cfd8d3"/><text x="609" y="59">Ingestion and storage</text>
+    <rect x="28" y="72" width="156" height="22" rx="3" fill="#fff" stroke="#cfd8d3"/><text x="106" y="87">Tree-mapping engine</text>
+    <rect x="194" y="72" width="156" height="22" rx="3" fill="#fff" stroke="#cfd8d3"/><text x="272" y="87">Multi-view association</text>
+    <rect x="360" y="72" width="156" height="22" rx="3" fill="#fff" stroke="#cfd8d3"/><text x="438" y="87">Estimator framework</text>
+    <rect x="526" y="72" width="166" height="22" rx="3" fill="#fff" stroke="#cfd8d3"/><text x="609" y="87">Analytics and reports</text>
+  </g>
+  <g font-size="10.5">
+    <rect x="14" y="122" width="220" height="116" rx="6" fill="#e7f3ea" stroke="#2f7d4f"/>
+    <text x="28" y="142" font-size="12.5" font-weight="600">Papaya profile (now)</text>
+    <text x="28" y="160">· tree model</text><text x="28" y="175">· fruit model</text><text x="28" y="190">· fruit-pass geometry: low side view</text>
+    <text x="28" y="205">· estimator settings</text><text x="28" y="220">· calibration protocol</text>
+    <rect x="250" y="122" width="220" height="116" rx="6" fill="#fff" stroke="#6b7772" stroke-dasharray="5 3"/>
+    <text x="264" y="142" font-size="12.5" font-weight="600">Mango profile (later)</text>
+    <text x="264" y="160">· tree model</text><text x="264" y="175">· fruit model</text><text x="264" y="190">· fruit-pass geometry: canopy sides</text>
+    <text x="264" y="205">· estimator settings</text><text x="264" y="220">· calibration protocol</text>
+    <rect x="486" y="122" width="220" height="116" rx="6" fill="#fff" stroke="#6b7772" stroke-dasharray="5 3"/>
+    <text x="500" y="142" font-size="12.5" font-weight="600">Apple profile (later)</text>
+    <text x="500" y="160">· tree model</text><text x="500" y="175">· fruit model</text><text x="500" y="190">· fruit-pass geometry: fruiting wall</text>
+    <text x="500" y="205">· estimator settings</text><text x="500" y="220">· calibration protocol</text>
+  </g>
+</svg>
+<figcaption>Figure 4. A crop is a profile plugged into the shared platform. Adding a crop means adding a profile, not changing the program.</figcaption>
+</figure>
+
+<h3>What a crop profile contains</h3>
+<table>
+  <tr><th style="width:26%">Item</th><th>What it holds</th><th style="width:26%">Papaya example</th></tr>
+  <tr><td>Tree model</td><td>Weights that find tree crowns in overhead photos, plus a manifest with checksum, input size and test scores</td><td>papaya tree model, version 1</td></tr>
+  <tr><td>Fruit model</td><td>Weights that find fruit in side-view frames, with the same manifest</td><td>papaya fruit model, version 1</td></tr>
+  <tr><td>Crop facts</td><td>Typical tree spacing, crown size, fruit size, the coarsest image detail the models accept</td><td>spacing about 2 m, oblong fruit</td></tr>
+  <tr><td>Fruit-pass geometry</td><td>Where the camera must be to see fruit: height, distance, tilt, number of sides, speed</td><td>low, level, both sides of the row</td></tr>
+  <tr><td>Estimator settings</td><td>Which correction steps to apply and their starting values</td><td>trunk-column model</td></tr>
+  <tr><td>Calibration protocol</td><td>How many trees to hand-count and how to choose them</td><td>about 18, spread by crown size</td></tr>
+</table>
+
+<h3>How the right models get loaded</h3>
+<ol>
+  <li>The user opens an orchard. The orchard record names its crop.</li>
+  <li>The model registry looks up the crop's profile and its active model versions.</li>
+  <li>The worker checks each weights file against its checksum and loads it.</li>
+  <li>Every result stores the model version that produced it, so old results stay explainable after a model is replaced.</li>
+</ol>
+
+<h3>Steps to add a new crop later</h3>
+<ol>
+  <li>Run the viewpoint study for that crop (section 8, Phase 0) to learn where its fruit can be seen from.</li>
+  <li>Collect and label images; train a tree model and a fruit model.</li>
+  <li>Write the profile files and register the model versions.</li>
+  <li>Build a virtual version of the crop for the simulator so the pipeline can be scored.</li>
+  <li>Hand-count calibration trees in a real orchard and check the estimates against them.</li>
+</ol>
+<div class="warn"><b>Honest limit.</b> Tree mapping carries over between crops almost unchanged. The fruit pass does not: fruit hang on a papaya trunk, throughout a mango canopy, and on a flat apple wall. Each crop needs its own capture geometry and its own field check. The platform makes that a configuration task, but it is still real work per crop.</div>
+
+<h3>How the four planned crops differ</h3>
+<table>
+  <tr><th style="width:12%">Crop</th><th style="width:20%">Plant shape</th><th style="width:22%">Where the fruit is</th><th style="width:24%">Fruit pass needed</th><th>Main difficulty</th></tr>
+  <tr><td><b>Papaya</b></td><td>One trunk, small crown on top</td><td>In a column on the trunk under the crown</td><td>One low side pass, both sides of the row</td><td>Green fruit on green; fruit behind fruit</td></tr>
+  <tr><td><b>Mango</b></td><td>Large round canopy, trees well apart</td><td>Around the outside of the canopy and inside it</td><td>Side passes at two or three heights, all round</td><td>Much fruit inside the foliage; tall trees</td></tr>
+  <tr><td><b>Orange</b></td><td>Dense round canopy, often touching in rows</td><td>Throughout the canopy</td><td>Side passes plus an angled view from above</td><td>High hidden share; trees merge into hedges</td></tr>
+  <tr><td><b>Apple</b></td><td>Thin flat wall on a trellis</td><td>Spread over the wall</td><td>Passes along the wall at two or three heights</td><td>Trees not separable; hail nets block drones</td></tr>
+</table>
+
+<h3>Readiness audit: where papaya was baked in, and the fix</h3>
+<p>The crop-profile idea was right, but five parts of the plan quietly assumed papaya. Each is now general in the contract, while only the papaya version is built in V1.</p>
+<table>
+  <tr><th style="width:22%">Part</th><th style="width:30%">Papaya assumption</th><th>Now</th></tr>
+  <tr><td>Fruit-mission generator</td><td>One low path along the row gaps</td><td>A viewpoint template from the profile: pass type, list of heights, distance, tilt, sides</td></tr>
+  <tr><td>What gets counted</td><td>Always a single tree; fruit belongs to the nearest trunk</td><td>A counting unit: a tree, or a stretch of row for hedges and walls. The assignment rule comes from the profile</td></tr>
+  <tr><td>Estimator</td><td>Hidden fruit are behind other fruit</td><td>Takes tree measurements (height, crown width, canopy volume) as inputs, because in dense canopies the hidden share depends on canopy size</td></tr>
+  <tr><td>Sensors</td><td>One colour camera</td><td>Each capture belongs to a sensor stream, so a depth camera or LiDAR can be added later without changing stored data</td></tr>
+  <tr><td>Simulator</td><td>Trunk with a spiral of fruit</td><td>Plant generator chosen by the profile: trunk column, round canopy, or wall</td></tr>
+</table>
+
+<h3>3D for every crop</h3>
+<ul>
+  <li><b>Height model from Pass A (built in Phase 7).</b> The overhead photos are also processed into a stitched map and a surface height model. This gives each tree's height, crown width and canopy volume, which the estimator uses and which other crops need most.</li>
+  <li><b>Schematic 3D view (Phases 11 to 13).</b> Each tree or row segment is drawn from measurements: the plant shape for its crop, with every fruit at its measured position. Observed fruit are solid; estimated fruit are drawn differently. The crown can be hidden to show the fruit.</li>
+  <li><b>After V1.</b> Photoreal reconstruction of selected trees, and LiDAR for dense-canopy crops where it earns its cost. Neither helps papaya counting much.</li>
+</ul>
+<div class="note"><b>Paper test before the contracts freeze.</b> At Milestone A, one dense-canopy crop (mango is recommended, as the opposite of papaya) is written up as a profile and walked through every contract. No code is built for it. If the mango profile fits without changing a contract, the platform is ready for other fruit.</div>
+
+<!-- ============================================================ 5 -->
+<h2>5. How the camera captures</h2>
+<p>One flight cannot do both jobs. From high above, the leaf crown of a papaya hides the fruit, which hang on the trunk underneath. So each survey has two passes.</p>
+
+<figure>
+<svg viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg">
+  <line x1="0" y1="290" x2="720" y2="290" stroke="#8a7a5c" stroke-width="2"/>
+  <line x1="360" y1="14" x2="360" y2="290" stroke="#cfd8d3" stroke-dasharray="4 4"/>
+  <!-- Pass A -->
+  <text x="20" y="26" font-size="13" font-weight="600">Pass A: high, looking straight down</text>
+  <path d="M180,52 L70,290 L290,290 z" fill="#2c6fb0" fill-opacity="0.10" stroke="#2c6fb0" stroke-dasharray="4 3"/>
+  <g><rect x="166" y="42" width="28" height="9" rx="2" fill="#1c2a24"/><line x1="152" y1="40" x2="176" y2="40" stroke="#1c2a24" stroke-width="2"/><line x1="184" y1="40" x2="208" y2="40" stroke="#1c2a24" stroke-width="2"/><circle cx="180" cy="54" r="3" fill="#2c6fb0"/></g>
+  <g id="treeA">
+    <rect x="176" y="190" width="8" height="100" fill="#8a7a5c"/>
+    <g stroke="#2f7d4f" stroke-width="5" stroke-linecap="round"><line x1="180" y1="190" x2="138" y2="172"/><line x1="180" y1="190" x2="222" y2="172"/><line x1="180" y1="190" x2="150" y2="158"/><line x1="180" y1="190" x2="210" y2="158"/><line x1="180" y1="190" x2="180" y2="152"/><line x1="180" y1="192" x2="134" y2="194"/><line x1="180" y1="192" x2="226" y2="194"/></g>
+    <g fill="#d9b23a" stroke="#8a6d12" stroke-width="0.8"><ellipse cx="172" cy="206" rx="5" ry="8"/><ellipse cx="188" cy="208" rx="5" ry="8"/><ellipse cx="171" cy="223" rx="5" ry="8"/><ellipse cx="189" cy="225" rx="5" ry="8"/><ellipse cx="180" cy="215" rx="5" ry="8"/><ellipse cx="180" cy="234" rx="5" ry="8"/></g>
+  </g>
+  <use href="#treeA" x="-90"/><use href="#treeA" x="90"/>
+  <text x="20" y="46" font-size="10.5">stills every few metres</text>
+  <text x="20" y="60" font-size="10.5">about 25 m up</text>
+  <text x="250" y="130" font-size="10.5" fill="#c0492f">crown hides</text><text x="250" y="143" font-size="10.5" fill="#c0492f">the fruit</text>
+  <text x="180" y="312" text-anchor="middle" font-size="11" font-weight="600">Result: the tree map</text>
+  <!-- Pass B -->
+  <text x="380" y="26" font-size="13" font-weight="600">Pass B: low, looking sideways</text>
+  <use href="#treeA" x="390"/>
+  <path d="M452,216 L566,186 L566,250 z" fill="#d98a1f" fill-opacity="0.16" stroke="#d98a1f" stroke-dasharray="4 3"/>
+  <g><rect x="424" y="210" width="28" height="9" rx="2" fill="#1c2a24"/><line x1="410" y1="208" x2="434" y2="208" stroke="#1c2a24" stroke-width="2"/><line x1="442" y1="208" x2="466" y2="208" stroke="#1c2a24" stroke-width="2"/><circle cx="454" cy="216" r="3" fill="#d98a1f"/></g>
+  <text x="380" y="46" font-size="10.5">video, slow flight along the gap between rows</text>
+  <text x="380" y="60" font-size="10.5">at fruit height, both sides of each row</text>
+  <line x1="438" y1="226" x2="438" y2="288" stroke="#6b7772" stroke-dasharray="2 3"/><text x="444" y="266" font-size="10" fill="#6b7772">a few metres</text>
+  <text x="540" y="312" text-anchor="middle" font-size="11" font-weight="600">Result: fruit on each tree</text>
+</svg>
+<figcaption>Figure 5. The two passes, not to scale. The exact height, distance and tilt of Pass B are chosen from the Phase 0 field study, because nobody has published them for papaya.</figcaption>
+</figure>
+
+<h3>Pass A: overhead survey</h3>
+<ul>
+  <li><b>What triggers the camera:</b> the autopilot, every fixed distance along each survey line. Each trigger produces a capture record: time, position, height, heading, camera tilt.</li>
+  <li><b>How spacing is calculated:</b> from the camera profile.
+    <br><code>image detail = sensor width × height ÷ (focal length × image width)</code>
+    <br><code>line spacing = ground width of a photo × (1 − side overlap)</code>
+    <br><code>photo distance = ground length of a photo × (1 − front overlap)</code></li>
+  <li><b>Worked example</b> for a typical one-inch camera (13.2 mm sensor, 8.8 mm lens, 5472 × 3648 pixels) at 25 m: each pixel covers 0.69 cm, one photo covers 37.5 m × 25 m, lines are 11.3 m apart at 70% side overlap, and a photo is taken every 5 m at 80% front overlap. At 3 m/s that is one photo every 1.7 seconds.</li>
+  <li><b>Height is tested, not assumed.</b> In published banana work, detection fell from 96% at 40 m to 76% at 60 m. We test two or three heights and keep the best.</li>
+</ul>
+
+<h3>Pass B: fruit observation</h3>
+<ul>
+  <li><b>Video, not stills.</b> Linking the same fruit between views needs frames that overlap heavily. Published trackers use about ten frames a second.</li>
+  <li><b>Pose for every frame.</b> The on-board computer records video with timestamps and logs the drone's position and attitude many times a second. After landing, each frame gets a pose by interpolating the log at the frame's time.</li>
+  <li><b>Both sides of each row.</b> The drone flies the gap on one side of a row, then the gap on the other side. As it passes a tree the viewing direction sweeps round the trunk.</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 720 270" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a5" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#d98a1f"/></marker></defs>
+  <g fill="#2f7d4f" fill-opacity="0.75">
+    <g id="rowT"><circle cx="70" cy="50" r="13"/><circle cx="150" cy="50" r="13"/><circle cx="230" cy="50" r="13"/><circle cx="310" cy="50" r="13"/><circle cx="390" cy="50" r="13"/><circle cx="470" cy="50" r="13"/><circle cx="550" cy="50" r="13"/><circle cx="630" cy="50" r="13"/></g>
+    <use href="#rowT" y="90"/><use href="#rowT" y="180"/>
+  </g>
+  <circle cx="390" cy="140" r="16" fill="none" stroke="#c0492f" stroke-width="2"/>
+  <g stroke="#d98a1f" stroke-width="2" fill="none" stroke-dasharray="7 4">
+    <path d="M30,95 H680" marker-end="url(#a5)"/><path d="M690,95 C712,95 712,185 690,185"/><path d="M680,185 H40" marker-end="url(#a5)"/>
+  </g>
+  <g stroke="#2c6fb0" stroke-width="1.1" stroke-opacity="0.8">
+    <line x1="300" y1="95" x2="390" y2="140"/><line x1="345" y1="95" x2="390" y2="140"/><line x1="390" y1="95" x2="390" y2="140"/><line x1="435" y1="95" x2="390" y2="140"/><line x1="480" y1="95" x2="390" y2="140"/>
+    <line x1="300" y1="185" x2="390" y2="140"/><line x1="345" y1="185" x2="390" y2="140"/><line x1="390" y1="185" x2="390" y2="140"/><line x1="435" y1="185" x2="390" y2="140"/><line x1="480" y1="185" x2="390" y2="140"/>
+  </g>
+  <g fill="#2c6fb0"><circle cx="300" cy="95" r="3"/><circle cx="345" cy="95" r="3"/><circle cx="390" cy="95" r="3"/><circle cx="435" cy="95" r="3"/><circle cx="480" cy="95" r="3"/><circle cx="300" cy="185" r="3"/><circle cx="345" cy="185" r="3"/><circle cx="390" cy="185" r="3"/><circle cx="435" cy="185" r="3"/><circle cx="480" cy="185" r="3"/></g>
+  <text x="30" y="20" font-size="11">tree rows seen from above</text>
+  <text x="30" y="258" font-size="10.5" fill="#6b7772">dashed amber: drone path in the gaps   ·   blue lines: views of the circled tree from ten positions on two sides</text>
+</svg>
+<figcaption>Figure 6. The fruit pass from above. One tree is seen from many directions without the drone ever circling it.</figcaption>
+</figure>
+
+<h3>Camera requirements this creates</h3>
+<ul>
+  <li><b>Fast shutter.</b> At about 2 m from the trunk and 1 m/s, the shutter must be around 1/500 s or faster to avoid blur.</li>
+  <li><b>Fixed focus and fixed exposure mode</b> so the fruit model sees consistent images.</li>
+  <li><b>Clock agreement</b> between camera and autopilot. At 1 m/s, a 50 millisecond error moves a frame's position by 5 cm.</li>
+  <li><b>Looking up into the sky</b> under the crown makes fruit dark against bright light; time of day and exposure matter and are recorded with each flight.</li>
+</ul>
+
+<div class="warn"><b>Flight time finding.</b> With rows 2.5 m apart, a two-hectare orchard has about 8 km of row. Filming every row from both sides at 1 m/s is roughly 4.5 hours of flying with one side-facing camera, or 2.2 hours with two. That is many batteries. The plan therefore supports two modes: <b>full coverage</b> for small blocks, and <b>sampled coverage</b>, where the fruit pass films a statistical sample of trees and the tree map (which counts every tree) scales the result to the orchard. Published sampling work needs between 20 and 156 trees for a 90% range within 10%.</div>
+
+<!-- ============================================================ 6 -->
+<h2>6. Hidden fruit: the three ideas, checked</h2>
+<p>You proposed three ideas: photograph from different directions, complete the shape of half-visible fruit, and use a statistical model. All three belong in the plan, but each solves a different kind of "hidden".</p>
+
+<figure>
+<svg viewBox="0 0 720 262" xmlns="http://www.w3.org/2000/svg">
+  <g font-size="11">
+    <!-- panel 1 -->
+    <rect x="10" y="10" width="226" height="242" rx="6" fill="#fff" stroke="#cfd8d3"/>
+    <text x="123" y="30" text-anchor="middle" font-size="12.5" font-weight="600">1. Hidden from this side</text>
+    <circle cx="123" cy="110" r="12" fill="#8a7a5c"/>
+    <g stroke="#8a6d12" stroke-width="0.8">
+      <ellipse cx="96" cy="110" rx="11" ry="8" fill="#d9b23a"/><ellipse cx="104" cy="90" rx="10" ry="8" fill="#d9b23a"/><ellipse cx="104" cy="130" rx="10" ry="8" fill="#d9b23a"/>
+      <ellipse cx="150" cy="110" rx="11" ry="8" fill="#c9cfcc"/><ellipse cx="142" cy="90" rx="10" ry="8" fill="#c9cfcc"/><ellipse cx="142" cy="130" rx="10" ry="8" fill="#c9cfcc"/>
+    </g>
+    <path d="M30,110 L84,84 M30,110 L84,136" stroke="#2c6fb0" stroke-dasharray="3 3" fill="none"/>
+    <rect x="18" y="103" width="14" height="14" rx="2" fill="#1c2a24"/>
+    <text x="123" y="172" text-anchor="middle" fill="#6b7772">trunk from above; grey fruit</text><text x="123" y="186" text-anchor="middle" fill="#6b7772">face away from the camera</text>
+    <text x="123" y="214" text-anchor="middle" font-weight="600" fill="#2f7d4f">Solved by: more directions</text>
+    <text x="123" y="232" text-anchor="middle">film both sides of the row</text>
+    <!-- panel 2 -->
+    <rect x="247" y="10" width="226" height="242" rx="6" fill="#fff" stroke="#cfd8d3"/>
+    <text x="360" y="30" text-anchor="middle" font-size="12.5" font-weight="600">2. Half hidden</text>
+    <ellipse cx="350" cy="108" rx="26" ry="42" fill="#d9b23a" stroke="#8a6d12"/>
+    <path d="M352,58 C420,70 430,140 372,158 C392,120 386,92 352,58 z" fill="#2f7d4f"/>
+    <ellipse cx="350" cy="108" rx="26" ry="42" fill="none" stroke="#c0492f" stroke-width="1.6" stroke-dasharray="5 3"/>
+    <text x="360" y="172" text-anchor="middle" fill="#6b7772">a leaf covers part of the fruit;</text><text x="360" y="186" text-anchor="middle" fill="#6b7772">the dashed outline is inferred</text>
+    <text x="360" y="214" text-anchor="middle" font-weight="600" fill="#2f7d4f">Solved by: shape completion</text>
+    <text x="360" y="232" text-anchor="middle">gives true size and centre</text>
+    <!-- panel 3 -->
+    <rect x="484" y="10" width="226" height="242" rx="6" fill="#fff" stroke="#cfd8d3"/>
+    <text x="597" y="30" text-anchor="middle" font-size="12.5" font-weight="600">3. Never visible</text>
+    <circle cx="597" cy="108" r="10" fill="#8a7a5c"/>
+    <g stroke="#8a6d12" stroke-width="0.8">
+      <ellipse cx="597" cy="88" rx="9" ry="7" fill="#5b5f5d"/><ellipse cx="614" cy="98" rx="9" ry="7" fill="#5b5f5d"/><ellipse cx="614" cy="118" rx="9" ry="7" fill="#5b5f5d"/><ellipse cx="597" cy="128" rx="9" ry="7" fill="#5b5f5d"/><ellipse cx="580" cy="118" rx="9" ry="7" fill="#5b5f5d"/><ellipse cx="580" cy="98" rx="9" ry="7" fill="#5b5f5d"/>
+      <ellipse cx="597" cy="70" rx="10" ry="8" fill="#d9b23a"/><ellipse cx="630" cy="89" rx="10" ry="8" fill="#d9b23a"/><ellipse cx="630" cy="127" rx="10" ry="8" fill="#d9b23a"/><ellipse cx="597" cy="146" rx="10" ry="8" fill="#d9b23a"/><ellipse cx="564" cy="127" rx="10" ry="8" fill="#d9b23a"/><ellipse cx="564" cy="89" rx="10" ry="8" fill="#d9b23a"/>
+    </g>
+    <text x="597" y="172" text-anchor="middle" fill="#6b7772">dark fruit sit behind other fruit</text><text x="597" y="186" text-anchor="middle" fill="#6b7772">from every direction</text>
+    <text x="597" y="214" text-anchor="middle" font-weight="600" fill="#2f7d4f">Solved by: statistics</text>
+    <text x="597" y="232" text-anchor="middle">calibrated on hand-counted trees</text>
+  </g>
+</svg>
+<figcaption>Figure 7. Three kinds of hidden fruit and the idea that addresses each.</figcaption>
+</figure>
+
+<h3>Idea 1: photographs from different directions — yes, this is the main method</h3>
+<ul>
+  <li><b>Evidence.</b> In mango, video tracking along the row saw 62% of the harvested fruit, against 40% from two still views. A multi-view mango system reached 1.36% error per tree without any correction factor.</li>
+  <li><b>How it works here.</b> The fruit model finds fruit in every frame. Because each frame has a known camera position, a fruit seen in two frames can be placed in 3D where the two sight lines cross. Detections that land on the same 3D point are one fruit. This removes double counting and merges both sides of the row.</li>
+  <li><b>Why it suits papaya.</b> The trunk is a single column with no branches, so each fruit has a clear position: height on the trunk and angle around it.</li>
+</ul>
+
+<h3>Idea 2: completing the shape of half-visible fruit — useful, but not for counting</h3>
+<ul>
+  <li><b>What it really gives.</b> A fruit that is half visible is already detected and counted as one. Completing its outline does not find fruit that are fully hidden.</li>
+  <li><b>Where it helps.</b> It gives the true size (so yield can be stated in kilograms, not only in fruit), a better centre point (so matching between views is more reliable), and cleaner separation of fruit that overlap.</li>
+  <li><b>Evidence.</b> Apple work that predicts the full outline of occluded fruit measured diameter to within 4.5 mm on average, and 2.9 mm when restricted to fruit more than 60% visible.</li>
+  <li><b>In the plan.</b> A supporting step inside Phase 11. Papaya fruit are oblong, so the completed outline is fitted with an ellipse. It is built after the basic count works, not before.</li>
+</ul>
+
+<h3>Idea 3: a statistical model — yes, for what no camera can see</h3>
+<p>The estimate is built in layers, and every layer is reported so nothing is hidden inside one number.</p>
+
+<figure>
+<svg viewBox="0 0 720 150" xmlns="http://www.w3.org/2000/svg">
+  <text x="14" y="22" font-size="12" font-weight="600">Example tree (illustrative numbers)</text>
+  <rect x="14" y="40" width="476" height="38" fill="#2f7d4f"/><text x="252" y="64" text-anchor="middle" font-size="12" style="fill:#fff">34 seen and merged across views</text>
+  <rect x="490" y="40" width="28" height="38" fill="#8fc3a2"/><text x="504" y="34" text-anchor="middle" font-size="10.5">+2</text>
+  <rect x="518" y="40" width="84" height="38" fill="#d98a1f"/><text x="560" y="64" text-anchor="middle" font-size="12" style="fill:#fff">+6</text>
+  <line x1="532" y1="92" x2="686" y2="92" stroke="#1c2a24" stroke-width="2"/><line x1="532" y1="85" x2="532" y2="99" stroke="#1c2a24" stroke-width="2"/><line x1="686" y1="85" x2="686" y2="99" stroke="#1c2a24" stroke-width="2"/><circle cx="602" cy="92" r="4.5" fill="#1c2a24"/>
+  <text x="609" y="112" text-anchor="middle" font-size="11">estimate 42, range 37 to 48</text>
+  <g font-size="10.5">
+    <rect x="14" y="124" width="12" height="12" fill="#2f7d4f"/><text x="32" y="134">raw count</text>
+    <rect x="110" y="124" width="12" height="12" fill="#8fc3a2"/><text x="128" y="134">missed by chance</text>
+    <rect x="250" y="124" width="12" height="12" fill="#d98a1f"/><text x="268" y="134">never visible (calibration)</text>
+  </g>
+</svg>
+<figcaption>Figure 8. The layers of one tree's estimate.</figcaption>
+</figure>
+
+<table>
+  <tr><th style="width:22%">Layer</th><th>How it is calculated</th></tr>
+  <tr><td><b>1. Raw count</b></td><td>Unique fruit after merging all views. This is a floor: the tree has at least this many.</td></tr>
+  <tr><td><b>2. Missed by chance</b></td><td>Each fruit has a record of how many passes saw it. From those records the system estimates the chance a visible fruit is detected on one pass, and from that, how many visible fruit were missed on every pass. With four passes and a 60% chance per pass, about 3% are missed; at 40% per pass, about 13%.</td></tr>
+  <tr><td><b>3. Never visible</b></td><td>Fruit buried behind other fruit cannot be estimated from images at all. On about 18 hand-counted trees per survey, the true count is compared with layer 2, giving a correction factor and its spread.</td></tr>
+  <tr><td><b>4. Range</b></td><td>The spread of the correction across the hand-counted trees is carried into each tree's estimate, producing a range, not just one number.</td></tr>
+  <tr><td><b>5. Orchard total</b></td><td>If the fruit pass covered a sample, trees are grouped by crown size from the tree map, and each group's average is scaled by the number of trees in it.</td></tr>
+  <tr><td><b>6. Check</b></td><td>On trees with known counts, the share of true counts falling inside the stated range is measured. A "90% range" must hold about 90% of the time or the model is rejected.</td></tr>
+</table>
+
+<div class="warn"><b>What the published work warns about.</b> A correction model that scored almost perfectly in one season did no better than a plain factor the next season. Across nine mango orchards, calibrated counts were sometimes worse than raw counts (17% against 11% average error). So the correction is refitted for every survey, kept simple, and the raw count is always shown beside it.</div>
+
+<!-- ============================================================ 7 -->
+<h2>7. Simulation and the virtual flight</h2>
+<p>The simulator is not an animation. It is a second kind of drone behind the same interface, flying over an orchard whose true contents are known.</p>
+
+<h3>Three levels, built in order</h3>
+<table>
+  <tr><th style="width:22%">Level</th><th>What it is</th><th style="width:30%">What it proves</th></tr>
+  <tr><td><b>Built-in simulator</b></td><td>A small physics model inside the backend. Runs instantly and gives the same result every time.</td><td>The mission engine, flight service, live view and data pipeline work.</td></tr>
+  <tr><td><b>Virtual orchard</b></td><td>Generated trees and fruit with a 3D view and a camera view in the browser.</td><td>Tree mapping, association and counting give the right answer on known truth.</td></tr>
+  <tr><td><b>Software autopilot (SITL)</b></td><td>The real autopilot program running on the laptop instead of on the drone.</td><td>The mission, fence and failsafes behave on the real autopilot exactly as planned.</td></tr>
+</table>
+
+<h3>How the virtual drone moves</h3>
+<p>Twenty times a second the simulator does the following.</p>
+<ol>
+  <li>Reads the current mission item (for example, go to this point at this height and speed).</li>
+  <li>Turns toward the target at a limited turn rate and accelerates at a limited rate, so corners and climbs take realistic time.</li>
+  <li>Updates position, height, speed, heading and tilt.</li>
+  <li>Drains the battery according to time, speed and climbing.</li>
+  <li>Optionally adds GPS error and wind drift.</li>
+  <li>Fires the camera when the trigger distance has been covered and writes a capture record.</li>
+  <li>Marks the item as reached when close enough and moves to the next.</li>
+  <li>Sends telemetry through the same interface a real drone uses.</li>
+</ol>
+<p>It also obeys commands (pause, resume, return, land) and applies the uploaded failsafes: for example, it returns home when the simulated battery crosses the critical threshold.</p>
+
+<h3>How the virtual orchard is made</h3>
+<ul>
+  <li><b>Trees:</b> placed in rows from the crop's spacing, with small random offsets, a few gaps, and varied height and crown size. Each has an ID.</li>
+  <li><b>Fruit:</b> each tree gets a fruit count drawn from a realistic spread. Each fruit gets a height on the trunk and an angle around it, in a spiral, with a size.</li>
+  <li><b>Truth table:</b> the simulator stores every tree and every fruit. For each camera frame it works out which fruit are in view and not blocked by the trunk, another fruit or a leaf.</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a8" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#6b7772"/></marker></defs>
+  <g font-size="11" text-anchor="middle">
+    <rect x="14" y="20" width="150" height="54" rx="6" fill="#e7f3ea" stroke="#2f7d4f"/><text x="89" y="42" font-weight="600">Virtual orchard</text><text x="89" y="58" font-size="10">true trees and fruit</text>
+    <rect x="198" y="20" width="150" height="54" rx="6" fill="#fff" stroke="#6b7772"/><text x="273" y="42" font-weight="600">Mission</text><text x="273" y="58" font-size="10">the real one</text>
+    <rect x="382" y="20" width="150" height="54" rx="6" fill="#e8f0f8" stroke="#2c6fb0"/><text x="457" y="42" font-weight="600">Virtual drone</text><text x="457" y="58" font-size="10">flies it</text>
+    <rect x="566" y="20" width="140" height="54" rx="6" fill="#e8f0f8" stroke="#2c6fb0"/><text x="636" y="42" font-weight="600">Virtual camera</text><text x="636" y="58" font-size="10">frames + what was visible</text>
+    <rect x="566" y="124" width="140" height="54" rx="6" fill="#fdf3e3" stroke="#d98a1f"/><text x="636" y="146" font-weight="600">Real pipeline</text><text x="636" y="162" font-size="10">ingest, associate, estimate</text>
+    <rect x="382" y="124" width="150" height="54" rx="6" fill="#fdf3e3" stroke="#d98a1f"/><text x="457" y="146" font-weight="600">Estimate</text><text x="457" y="162" font-size="10">count and range per tree</text>
+    <rect x="130" y="124" width="218" height="54" rx="6" fill="#fff" stroke="#c0492f" stroke-width="1.6"/><text x="239" y="146" font-weight="600">Score against the truth</text><text x="239" y="162" font-size="10">error, bias, range coverage</text>
+  </g>
+  <g stroke="#6b7772" stroke-width="1.5" marker-end="url(#a8)">
+    <line x1="164" y1="47" x2="196" y2="47"/><line x1="348" y1="47" x2="380" y2="47"/><line x1="532" y1="47" x2="564" y2="47"/>
+    <line x1="636" y1="74" x2="636" y2="122"/><line x1="566" y1="151" x2="534" y2="151"/><line x1="382" y1="151" x2="350" y2="151"/>
+    <path d="M89,74 C89,150 100,151 128,151" fill="none"/>
+  </g>
+</svg>
+<figcaption>Figure 9. The simulation loop. Because the orchard's truth is known, every run ends in a score.</figcaption>
+</figure>
+
+<h3>Two ways to produce detections in simulation</h3>
+<ul>
+  <li><b>Synthetic detector.</b> Takes the list of truly visible fruit and deliberately misses some, shifts some and invents a few false ones, at rates we set. This tests association and counting under controlled error, and is the main tool.</li>
+  <li><b>Rendered frames through the real model.</b> The browser renders what the virtual camera sees and sends it through real ingestion. This tests the plumbing. The real model will perform poorly on drawn trees, and that is expected.</li>
+</ul>
+
+<div class="note"><b>What simulation can and cannot tell us.</b> It can prove the mission flies, the data flows, fruit are merged correctly, and the stated range is honest. It cannot prove the fruit model works on real papaya, or that the real fruit pass can see the fruit. Those need real footage, which is what Phase 0 collects.</div>
+
+<!-- ============================================================ 8 -->
+<h2>8. Step-by-step development</h2>
+<p>Each phase ends at the same gate: build, test, demonstrate, document, commit, freeze. A phase is not finished because the code runs; it is finished when its test passes.</p>
+
+<figure>
+<svg viewBox="0 0 720 262" xmlns="http://www.w3.org/2000/svg">
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="14" y="12" width="570" height="24" rx="4" fill="#fdf3e3" stroke="#d98a1f"/><text x="299" y="28">Phase 0: field viewpoint study (runs alongside Phases 1 to 5)</text>
+    <g fill="#e7f3ea" stroke="#2f7d4f">
+      <rect x="14" y="48" width="106" height="38" rx="4"/><rect x="130" y="48" width="106" height="38" rx="4"/><rect x="246" y="48" width="106" height="38" rx="4"/><rect x="362" y="48" width="106" height="38" rx="4"/><rect x="478" y="48" width="106" height="38" rx="4"/>
+    </g>
+    <text x="67" y="64">1</text><text x="67" y="78">Foundation</text><text x="183" y="64">2</text><text x="183" y="78">Orchards</text><text x="299" y="64">3</text><text x="299" y="78">Mission core</text><text x="415" y="64">4</text><text x="415" y="78">Flight + simulator</text><text x="531" y="64">5</text><text x="531" y="78">Capture, ingest</text>
+    <rect x="596" y="48" width="110" height="38" rx="19" fill="#1c2a24"/><text x="651" y="64" style="fill:#fff">Milestone A</text><text x="651" y="78" font-size="9.5" style="fill:#fff">end-to-end slice</text>
+    <g fill="#e8f0f8" stroke="#2c6fb0">
+      <rect x="14" y="100" width="135" height="38" rx="4"/><rect x="159" y="100" width="135" height="38" rx="4"/><rect x="304" y="100" width="135" height="38" rx="4"/><rect x="449" y="100" width="135" height="38" rx="4"/>
+    </g>
+    <text x="81" y="116">6</text><text x="81" y="130">Papaya tree model</text><text x="226" y="116">7</text><text x="226" y="130">Tree mapping</text><text x="371" y="116">8</text><text x="371" y="130">Virtual orchard (3D)</text><text x="516" y="116">9</text><text x="516" y="130">Software autopilot</text>
+    <rect x="596" y="100" width="110" height="38" rx="19" fill="#1c2a24"/><text x="651" y="116" style="fill:#fff">Milestone B</text><text x="651" y="130" font-size="9.5" style="fill:#fff">same mission, 2 sims</text>
+    <g fill="#fdf3e3" stroke="#d98a1f">
+      <rect x="14" y="152" width="184" height="38" rx="4"/><rect x="208" y="152" width="184" height="38" rx="4"/><rect x="402" y="152" width="182" height="38" rx="4"/>
+    </g>
+    <text x="106" y="168">10</text><text x="106" y="182">Fruit pass + detection</text><text x="300" y="168">11</text><text x="300" y="182">Multi-view association</text><text x="493" y="168">12</text><text x="493" y="182">Statistical counting</text>
+    <g fill="#f4f6f5" stroke="#6b7772">
+      <rect x="14" y="204" width="106" height="38" rx="4"/><rect x="130" y="204" width="106" height="38" rx="4"/><rect x="246" y="204" width="106" height="38" rx="4"/><rect x="362" y="204" width="106" height="38" rx="4"/>
+    </g>
+    <text x="67" y="220">13</text><text x="67" y="234">Analytics</text><text x="183" y="220">14</text><text x="183" y="234">Reports</text><text x="299" y="220">15</text><text x="299" y="234">Polish</text><text x="415" y="220">16</text><text x="415" y="234">Integration</text>
+    <rect x="478" y="204" width="106" height="38" rx="19" fill="#1c2a24"/><text x="531" y="220" style="fill:#fff">Software V1</text><text x="531" y="234" font-size="9.5" style="fill:#fff">complete</text>
+    <rect x="596" y="204" width="110" height="38" rx="4" fill="#fff" stroke="#c0492f" stroke-width="1.6"/><text x="651" y="220">Hardware</text><text x="651" y="234" font-size="9.5">bench, hover, field</text>
+  </g>
+</svg>
+<figcaption>Figure 10. The order of work.</figcaption>
+</figure>
+
+<table>
+  <tr><th style="width:15%">Phase</th><th style="width:30%">What we build</th><th>How it works</th><th style="width:22%">Done when</th></tr>
+  <tr><td><b>0 Viewpoint study</b> (field)</td><td>Footage of 15 to 20 fruiting papaya trees from a camera on a pole, at several heights, distances, tilts and sides; a hand count of each tree</td><td>The pole stands in for the drone. For each viewpoint we count how many of the tree's fruit can be seen. The footage is also labelled and becomes the first training and test set for the fruit model.</td><td>A table of fruit visible per viewpoint; the fruit-pass geometry is chosen from it</td></tr>
+  <tr><td><b>1 Foundation</b></td><td>Project skeleton, backend, browser shell, database, live channel, logging, model registry, coordinate module, the VehicleLink interface</td><td>FastAPI backend, React and TypeScript front end, PostgreSQL with PostGIS in Docker. The coordinate module converts between latitude and longitude and local metres in one place. The registry reads crop profiles.</td><td>Health check passes, a live message round-trips, the registry loads a stub model, coordinate tests pass</td></tr>
+  <tr><td><b>2 Orchards</b></td><td>Create, list and open orchards; draw the boundary; pick the crop</td><td>The boundary is drawn on a MapLibre map and stored as a polygon. Area is computed by the database. The crop links the orchard to its profile.</td><td>A papaya orchard exists with a boundary and the right area</td></tr>
+  <tr><td><b>3 Mission core</b></td><td>Mission file format, survey generator, validation, planner screen</td><td>Intent is compiled into a flat item list by a deterministic compiler. Validation runs on the items. Every saved change makes a new revision.</td><td>A survey over the orchard gives the expected line spacing, photo count, time and battery</td></tr>
+  <tr><td><b>4 Flight</b></td><td>Built-in simulator, flight service, live flight screen, flight records</td><td>The simulator sits behind VehicleLink and flies the item list as described in section 7. The flight service relays telemetry to the browser and commands to the drone.</td><td>The mission flies in simulation; the track follows the plan; pause and return work</td></tr>
+  <tr><td><b>5 Capture and ingestion</b></td><td>Capture records, photo and video ingestion, quality checks, job queue and worker</td><td>Each trigger writes a capture record. Ingestion pairs files with records, rejects blurred or dark frames, stores the rest and queues a job. A separate worker process runs jobs.</td><td>Every trigger yields a stored capture and a finished job</td></tr>
+  <tr><td><b>Milestone A</b></td><td>One thin slice through everything so far</td><td>Orchard, mission, simulated flight, captures, and a tree map drawn from the simulator's truth.</td><td>The contracts are reviewed once more, then frozen</td></tr>
+  <tr><td><b>6 Papaya tree model</b></td><td>The existing papaya model behind the registry; a results screen</td><td>The worker loads the model named by the crop profile, runs it on overhead photos and stores crown outlines with the model version.</td><td>Real photos give stored, visible tree outlines</td></tr>
+  <tr><td><b>7 Tree mapping</b></td><td>Ground positions, permanent tree IDs, rows, tree map, tree page; stitched map and height model giving tree height and crown width</td><td>Each crown's pixel position is projected to the ground using the capture pose. Detections of one tree in overlapping photos are merged. A new survey is aligned to the stored map by matching the row pattern, then each tree keeps its ID.</td><td>A simulated survey recovers the virtual trees within a set position error</td></tr>
+  <tr><td><b>8 Virtual orchard</b></td><td>3D scene, generated trees and fruit, camera view, truth table</td><td>Three.js draws the orchard in local metres. The backend owns the truth; the browser only draws it.</td><td>The camera view matches the computed footprint</td></tr>
+  <tr><td><b>9 Software autopilot</b></td><td>MAVLink link, upload and read-back, failsafe configuration</td><td>The real autopilot program runs in Docker. The backend speaks MAVLink to it exactly as it later will to the Pixhawk.</td><td>The Phase 3 mission flies unchanged on the autopilot</td></tr>
+  <tr><td><b>10 Fruit pass</b></td><td>Fruit-mission generator driven by the crop's viewpoint template, sampled and full coverage, video ingestion with per-frame pose, fruit detection</td><td>The generator lays paths along row gaps from the tree map using the Phase 0 geometry. Frames get poses from the log. The fruit model runs on each frame.</td><td>Each chosen tree is filmed as planned; detection is scored on Phase 0 footage</td></tr>
+  <tr><td><b>11 Association</b></td><td>3D placement and merging of fruit; shape completion as a supporting step</td><td>Detections are linked frame to frame, placed in 3D where sight lines cross, assigned to the nearest trunk, and merged across the two sides.</td><td>Double-count and missed-count rates meet target against simulator truth and Phase 0 counts</td></tr>
+  <tr><td><b>12 Counting</b></td><td>The layered estimate of section 6, the calibration workflow, sampling scale-up</td><td>As described in section 6.</td><td>Stated ranges hold at the stated rate in simulation and on Phase 0 trees</td></tr>
+  <tr><td><b>13 Analytics</b></td><td>Orchard, tree and fruit statistics, coverage, maps, tree ranking</td><td>Queries over stored estimates, drawn as maps and charts. No health or disease advice in V1.</td><td>Numbers match the stored records</td></tr>
+  <tr><td><b>14 Reports</b></td><td>PDF, CSV and JSON exports; tree and fruit inventories; mission files</td><td>Generated from the same queries as the analytics screens.</td><td>A survey report opens and matches the dashboard</td></tr>
+  <tr><td><b>15 Polish</b></td><td>Visual effects, transitions, loading states, responsive layout</td><td>Only after function works, so effects never stand in for engineering.</td><td>Review on laptop and tablet</td></tr>
+  <tr><td><b>16 Integration</b></td><td>One full run from new orchard to report</td><td>All parts together, on both simulators.</td><td>Software V1 complete</td></tr>
+  <tr><td><b>Hardware</b></td><td>Pixhawk, on-board computer, camera</td><td>Bench test with propellers off, then a hover test, then a field survey. Only the connection address changes in the software.</td><td>A real survey produces a tree map and counts</td></tr>
+</table>
+
+<!-- ============================================================ 9 -->
+<h2>9. Things noticed while planning</h2>
+<ol>
+  <li><b>Filming every tree takes hours.</b> About 2.2 to 4.5 hours of flight for two hectares. Sampled coverage is now a first-class mode, and the statistics scale a sample to the orchard.</li>
+  <li><b>Low flight between rows needs precise positioning.</b> Standard GPS is off by about two metres, and rows are two to three metres apart. Autonomous low flight therefore needs RTK positioning, or the fruit pass uses a safer viewpoint (higher, angled down from above the next gap), or a person carries the camera. Phase 0 tests all three viewpoints.</li>
+  <li><b>Unripe papaya are green on a green background.</b> Detection is harder than for red apples or orange citrus and will rely on shape and texture. Expect more labelled data to be needed.</li>
+  <li><b>Shape completion does not count hidden fruit.</b> It improves size and matching. It is kept, but as a supporting step.</li>
+  <li><b>Repeat-view statistics miss buried fruit.</b> Fruit hidden from every direction never appear in any view, so only hand counts can correct for them. Both layers are needed.</li>
+  <li><b>We need our own labelled footage.</b> No public dataset shows papaya fruit from a drone. Phase 0 footage is the first dataset.</li>
+  <li><b>Propeller wash at close range moves the leaves.</b> This may blur frames or may uncover fruit. It can only be judged with a real drone, so it is a hardware-stage check.</li>
+  <li><b>OrchardVision does not replace QGroundControl for drone setup.</b> Calibration and tuning stay there.</li>
+  <li><b>Each new crop needs its own field study.</b> The software is ready for many crops; the capture geometry is not transferable.</li>
+</ol>
+
+<h2 class="nobreak">10. Decisions still open</h2>
+<table>
+  <tr><th style="width:26%">Decision</th><th>Options and recommendation</th><th style="width:24%">Needed by</th></tr>
+  <tr><td>Orchard access for Phase 0</td><td>15 to 20 fruiting papaya trees for about a day, a camera on a pole, hand counting</td><td>As early as possible</td></tr>
+  <tr><td>Development database</td><td>PostgreSQL with PostGIS in Docker (recommended) or SQLite for now</td><td>Phase 1</td></tr>
+  <tr><td>Existing papaya model and data</td><td>Where they are stored, and whether the images are overhead or side views</td><td>Phase 6</td></tr>
+  <tr><td>Autopilot firmware</td><td>ArduPilot (recommended) or PX4</td><td>Phase 9</td></tr>
+  <tr><td>Positioning and camera</td><td>RTK or standard GPS; fixed camera or gimbal; one side camera or two</td><td>Before hardware; affects the fruit pass</td></tr>
+  <tr><td>Second crop for the paper test</td><td>Mango (recommended), orange or apple, written up as a profile only</td><td>Milestone A</td></tr>
+  <tr><td>Fruit-pass coverage</td><td>Sampled (recommended for whole orchards) or full (small blocks)</td><td>Phase 10</td></tr>
+</table>
+
+</body>
+</html>

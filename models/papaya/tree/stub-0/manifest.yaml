@@ -1,0 +1,8 @@
+version: stub-0
+framework: stub
+weights: weights.bin
+sha256: 9799dda9a5796e51ba259e250e62bcbceb5cb0f204e0e36e1e36081f76f737a7
+input_size: [640, 640]
+classes: [papaya_tree]
+metrics: {}
+notes: Placeholder until the real papaya tree model is registered.
