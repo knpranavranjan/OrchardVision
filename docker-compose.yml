@@ -1,6 +1,8 @@
 services:
   db:
     image: postgis/postgis:16-3.4
+    # Published for Intel only; an Apple Silicon Mac runs it through Docker's emulation.
+    platform: linux/amd64
     container_name: orchardvision-db
     environment:
       POSTGRES_USER: orchard
@@ -23,6 +25,8 @@ services:
   sitl:
     profiles: ["sitl"]
     build: ./sitl
+    # The ArduPilot binary it downloads is built for Intel.
+    platform: linux/amd64
     container_name: orchardvision-sitl
     environment:
       SITL_HOME: "12.9716,77.5946,900,0"
